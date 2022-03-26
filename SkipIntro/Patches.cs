@@ -46,7 +46,6 @@ namespace SkipIntro
                 {
                     scrController.deaths = 0;
                     ChangeDeath = false;
-                    Main.Logger.Log("deaths = 0");
                 }
             }
         }
