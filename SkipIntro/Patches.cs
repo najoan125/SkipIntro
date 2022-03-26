@@ -20,7 +20,19 @@ namespace SkipIntro
                 {
                     scrController.deaths = 1;
                     ChangeDeath = true;
-                    Main.Logger.Log("deaths = 1");
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(CustomLevel),"Play")]
+        public static class CusotmLevelPlayPatch
+        {
+            public static void Prefix()
+            {
+                if (scrController.deaths == 0)
+                {
+                    scrController.deaths = 1;
+                    ChangeDeath = true;
                 }
             }
         }
