@@ -11,6 +11,7 @@ namespace SkipIntro
     public static class Patches
     {
         public static bool ChangeDeath = false;
+        public static bool auto = false;
         [HarmonyPatch(typeof(scrConductor), "StartMusic")]
         public static class StartMusicPatch
         {
@@ -27,12 +28,17 @@ namespace SkipIntro
         [HarmonyPatch(typeof(CustomLevel),"Play")]
         public static class CusotmLevelPlayPatch
         {
-            public static void Prefix()
+            public static void Prefix(int seqID, scrConductor __instance)
             {
                 if (scrController.deaths == 0)
                 {
                     scrController.deaths = 1;
                     ChangeDeath = true;
+                }
+                if (RDC.auto && seqID == 0 && Persistence.GetSkipIntroAfterFirstTry())
+                {
+                    RDC.auto = false;
+                    auto = true;
                 }
             }
         }
@@ -46,6 +52,11 @@ namespace SkipIntro
                 {
                     scrController.deaths = 0;
                     ChangeDeath = false;
+                }
+                if (auto && AudioSettings.dspTime - (double)scrConductor.calibration_i > __instance.conductor.GetCountdownTime(0))
+                {
+                    auto = false;
+                    RDC.auto = true;
                 }
             }
         }

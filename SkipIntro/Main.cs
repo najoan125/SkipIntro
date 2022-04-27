@@ -30,6 +30,11 @@ namespace SkipIntro
                 return;
             }
             isplaying = !scrController.instance.paused && scrConductor.instance.isGameWorld;
+            if(!isplaying && Patches.auto)
+            {
+                Patches.auto = false;
+                RDC.auto = true;
+            }
         }
 
         private static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
