@@ -12,6 +12,7 @@ namespace SkipIntro
     {
         public static bool ChangeDeath = false;
         public static bool auto = false;
+        public static int seq = 0;
         [HarmonyPatch(typeof(scrConductor), "StartMusic")]
         public static class StartMusicPatch
         {
@@ -28,14 +29,15 @@ namespace SkipIntro
         [HarmonyPatch(typeof(CustomLevel),"Play")]
         public static class CusotmLevelPlayPatch
         {
-            public static void Prefix(int seqID, scrConductor __instance)
+            public static void Prefix(int seqID)
             {
+                seq = seqID;
                 if (scrController.deaths == 0)
                 {
                     scrController.deaths = 1;
                     ChangeDeath = true;
                 }
-                if (RDC.auto && seqID == 0 && Persistence.GetSkipIntroAfterFirstTry())
+                if (RDC.auto && seqID == 0 && Persistence.GetSkipIntroAfterFirstTry() && scrConductor.instance.addoffset > GCS.longIntroThresholdSec)
                 {
                     RDC.auto = false;
                     auto = true;
@@ -48,15 +50,21 @@ namespace SkipIntro
         {
             public static void Postfix(scrCountdown __instance)
             {
-                if (ChangeDeath && __instance.controller.goShown)
+                if (ChangeDeath && AudioSettings.dspTime - (double)scrConductor.calibration_i > __instance.conductor.GetCountdownTime(0))
                 {
                     scrController.deaths = 0;
                     ChangeDeath = false;
                 }
                 if (auto && AudioSettings.dspTime - (double)scrConductor.calibration_i > __instance.conductor.GetCountdownTime(0))
                 {
-                    auto = false;
                     RDC.auto = true;
+                    auto = false;
+                }
+                if ((auto || RDC.auto) && seq == 0)
+                {
+                    __instance.CancelGo();
+                    scrConductor.instance.fastTakeoff = true;
+                    scrController.instance.forceNoCountdown = true;
                 }
             }
         }
